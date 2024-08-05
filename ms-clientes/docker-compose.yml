@@ -10,7 +10,7 @@ services:
       MYSQL_USER: danuser
       MYSQL_PASSWORD: danpassword
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
@@ -47,7 +47,7 @@ services:
       SPRING_EUREKA_DEFAULT_ZONE: http://ms-eureka-svc:8761/eureka/
       SPRING_INSTANCIA: ms-clientes-svc-1
     ports:
-      - "6080:8080"
+      - "6080:8082"
     depends_on:
       - mysql
     networks:
@@ -95,7 +95,7 @@ services:
       SPRING_EUREKA_DEFAULT_ZONE: http://ms-eureka-svc:8761/eureka/
       SPRING_INSTANCIA: ms-clientes-svc-3
     ports:
-      - "6082:8080"
+      - "6082:8081"
     depends_on:
       - mysql
     networks:
