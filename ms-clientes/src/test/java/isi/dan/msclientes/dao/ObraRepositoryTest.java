@@ -20,6 +20,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import isi.dan.msclientes.model.Obra;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.util.Optional;
 import java.util.List;
 
@@ -54,7 +55,8 @@ public class ObraRepositoryTest {
     void iniciarDatos(){
         Obra obra = new Obra();
         obra.setDireccion("Test Obra 999");
-        obra.setPresupuesto(BigDecimal.valueOf(100));
+        obra.setFecha(Date.valueOf("2024-06-06"));
+        obra.setPresupuesto(BigDecimal.valueOf(1000000));
         obraRepository.save(obra);
     }
 
@@ -71,7 +73,9 @@ public class ObraRepositoryTest {
     @Test
     void testSaveAndFindById() {
         Obra obra = new Obra();
-        obra.setDireccion("Test Obra");
+        obra.setDireccion("Test Obra"); //VER DESPUES (lo agregue yo)
+        obra.setFecha(Date.valueOf("2024-06-06"));
+        obra.setPresupuesto(BigDecimal.valueOf(1000000));
         obraRepository.save(obra);
 
         Optional<Obra> foundObra = obraRepository.findById(obra.getId());

@@ -19,7 +19,9 @@ COPY --from=dependencies /root/.m2 /root/.m2
 COPY . .
 
 # Build the project
+
 RUN mvn clean package -DskipTests
+RUN mvn clean verify
 
 # Stage 3: Run the JAR file
 FROM eclipse-temurin:21-jre-alpine
