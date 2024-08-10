@@ -60,6 +60,7 @@ public class ClienteControllerTest {
                 .andExpect(jsonPath("$.nombre").value("Test Cliente"))
                 .andExpect(jsonPath("$.cuit").value("12998887776"));
     }
+    
     @Test
     void testGetById_NotFound() throws Exception {
         Mockito.when(clienteService.findById(2)).thenReturn(Optional.empty());
@@ -67,7 +68,7 @@ public class ClienteControllerTest {
         mockMvc.perform(get("/api/clientes/2"))
                 .andExpect(status().isNotFound());
     }
-
+    
     @Test
     void testCreate() throws Exception {
         Mockito.when(clienteService.save(Mockito.any(Cliente.class))).thenReturn(cliente);
@@ -108,4 +109,3 @@ public class ClienteControllerTest {
         }
     }
 }
-
