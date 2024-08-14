@@ -20,6 +20,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import isi.dan.msclientes.model.Obra;
 
 import java.math.BigDecimal;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.List;
 
@@ -55,6 +57,7 @@ public class ObraRepositoryTest {
         Obra obra = new Obra();
         obra.setDireccion("Test Obra 999");
         obra.setPresupuesto(BigDecimal.valueOf(100));
+        obra.setFecha(Date.valueOf(LocalDate.of(2024, 8, 10)));
         obraRepository.save(obra);
     }
 
@@ -72,6 +75,8 @@ public class ObraRepositoryTest {
     void testSaveAndFindById() {
         Obra obra = new Obra();
         obra.setDireccion("Test Obra");
+        obra.setPresupuesto(BigDecimal.valueOf(100));
+        obra.setFecha(Date.valueOf(LocalDate.of(2016,5, 10)));
         obraRepository.save(obra);
 
         Optional<Obra> foundObra = obraRepository.findById(obra.getId());
@@ -85,6 +90,7 @@ public class ObraRepositoryTest {
         Obra obra = new Obra();
         obra.setDireccion("Test Obra");
         obra.setPresupuesto(BigDecimal.valueOf(200));
+        obra.setFecha(Date.valueOf(LocalDate.of(2016,6, 10)));
         obraRepository.save(obra);
 
         List<Obra> resultado = obraRepository.findByPresupuestoGreaterThanEqual(BigDecimal.valueOf(50));
