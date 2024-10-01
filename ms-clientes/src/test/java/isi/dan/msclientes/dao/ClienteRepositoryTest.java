@@ -56,7 +56,6 @@ public class ClienteRepositoryTest {
         cliente.setCorreoElectronico("cliente@test.com");
         cliente.setCuit("20-12345678-9");
         cliente.setMaximoDescubierto(BigDecimal.valueOf(5000));
-        cliente.setMaximoObrasEjecucionInteger(3);
         clienteRepository.save(cliente);
     }
 

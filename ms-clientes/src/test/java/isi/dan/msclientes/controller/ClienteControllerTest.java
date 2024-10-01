@@ -38,16 +38,18 @@ public class ClienteControllerTest {
         cliente.setNombre("Test Cliente");
         cliente.setCorreoElectronico("test@cliente.com");
         cliente.setCuit("12998887776");
+        cliente.setMaximoDescubierto(BigDecimal.valueOf(100000));
     }
 
     @Test
     void testGetAll() throws Exception {
         Mockito.when(clienteService.findAll()).thenReturn(Collections.singletonList(cliente));
 
-        mockMvc.perform(get("/api/clientes"))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/clientes")).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].nombre").value("Test Cliente"));
+                .andExpect(jsonPath("$[0].nombre").value("Test Cliente"))
+                .andExpect(jsonPath("$[0].correoElectronico").value("test@cliente.com"))
+				.andExpect(jsonPath("$[0].maximoDescubierto").value(100000));
     }
 
     @Test
@@ -58,7 +60,8 @@ public class ClienteControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.nombre").value("Test Cliente"))
-                .andExpect(jsonPath("$.cuit").value("12998887776"));
+				.andExpect(jsonPath("$.correoElectronico").value("test@cliente.com"))
+				.andExpect(jsonPath("$.maximoDescubierto").value(150000));
     }
     
     @Test
@@ -77,19 +80,26 @@ public class ClienteControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(cliente)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nombre").value("Test Cliente"));
+                .andExpect(jsonPath("$.nombre").value("Test Cliente"))
+                .andExpect(jsonPath("$.correoElectronico").value("test@cliente.com"))
+				.andExpect(jsonPath("$.maximoDescubierto").value(150000));
     }
 
     @Test
     void testUpdate() throws Exception {
         Mockito.when(clienteService.findById(1)).thenReturn(Optional.of(cliente));
-        Mockito.when(clienteService.update(Mockito.any(Cliente.class))).thenReturn(cliente);
+		Cliente clienteUpdated = new Cliente();
+		clienteUpdated.setNombre("Test Cliente updated");
+		clienteUpdated.setCorreoElectronico("test@cliente-updated.com");
+		clienteUpdated.setMaximoDescubierto(BigDecimal.valueOf(10000));
 
-        mockMvc.perform(put("/api/clientes/1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(cliente)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nombre").value("Test Cliente"));
+		Mockito.when(clienteService.update(Mockito.any(Cliente.class))).thenReturn(clienteUpdated);
+		
+		mockMvc.perform(
+				put("/api/clientes/1").contentType(MediaType.APPLICATION_JSON).content(asJsonString(clienteUpdated)))
+				.andExpect(status().isOk()).andExpect(jsonPath("$.nombre").value("Test Cliente updated"))
+				.andExpect(jsonPath("$.correoElectronico").value("test@cliente-updated.com"))
+				.andExpect(jsonPath("$.maximoDescubierto").value(10000));
     }
 
     @Test

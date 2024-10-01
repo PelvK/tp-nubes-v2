@@ -37,20 +37,29 @@ public class Cliente {
     
     private String cuit;
 
-
-    @Column(name="MAXIMO_DESCUBIERTO")
-    @Min(value = 0, message = "El descubierto maximo debe ser mayor a 0")
-    private BigDecimal maximoDescubierto;
-
-    @Column(name="MAXIMO_CANT_OBRAS_EJEC")
-    @Min(value = 0, message = "El maximo de obras en ejecucion debe ser mayor a 0")
-    private Integer maximoObrasEjecucionInteger;
-
-    @OneToMany(mappedBy="cliente")
+    @OneToMany(mappedBy="cliente") //VER SI CON ESTO SE ROMPE
     private Set<Obra> obras;
 
     @OneToMany(mappedBy="cliente")
     private Set<Usuario> usuarios;
+
+    @NotNull(message = "El maximo descubierto es obligatorio")
+	@Column(name = "MAXIMO_DESCUBIERTO")
+	@Min(value = 10000, message = "El descubierto maximo debe ser al menos 10000")
+	BigDecimal maximoDescubierto;
+
+	@Min(value = 0, message = "No se pueden tener cantidades negativas de obras disponibles a realizar")
+	Integer cantObrasDisponibles;
+	
+	public void tomarObra() throws ObraCambiarEstadoInvalidoException {
+		if(cantObrasDisponibles==0)
+			throw new ObraCambiarEstadoInvalidoException("El cliente "+id+" ha superado su limite de obras habilitadas en simultaneo");
+		cantObrasDisponibles--;
+	}
+
+	public void liberarObra() {
+		cantObrasDisponibles++;
+	}
 
     @Value("${cliente.maximoDescubierto.default}")
     private transient BigDecimal maximoDescubiertoDefault;
@@ -61,27 +70,4 @@ public class Cliente {
             maximoDescubierto = maximoDescubiertoDefault;
         }
     }
-    
-    // Métodos convenientes para agregar y remover usuarios
-    public void addUsuario(Usuario usuario) {
-        usuarios.add(usuario);
-        usuario.setCliente(this);
-    }
-    
-    public void removeUsuario(Usuario usuario) {
-        usuarios.remove(usuario);
-        usuario.setCliente(null);
-    }
-
-    // Métodos convenientes para agregar y remover obras
-    public void addObra(Obra obra) {
-        obras.add(obra);
-        obra.setCliente(this);
-    }
-    
-    public void removeObra(Obra obra) {
-        obras.remove(obra);
-        obra.setCliente(null);
-    }
-    
 }

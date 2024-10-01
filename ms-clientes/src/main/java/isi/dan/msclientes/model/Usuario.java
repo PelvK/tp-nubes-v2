@@ -35,8 +35,7 @@ public class Usuario {
     @NotBlank(message = "DNI es obligatorio")
     private String dni;
 
-    @ManyToOne
-    @JoinColumn(name = "ID_CLIENTE")
-    private Cliente cliente;
+    @ManyToMany
+	List<Cliente> clientes;
     
 }

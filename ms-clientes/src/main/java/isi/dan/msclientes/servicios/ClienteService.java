@@ -15,6 +15,9 @@ public class ClienteService {
     @Autowired
     private ClienteRepository clienteRepository;
 
+    @Value("${ms-clientes.max-cant-obras-disponibles:1}")
+	private Integer cantObrasDisponibles;
+
     public List<Cliente> findAll() {
         return clienteRepository.findAll();
     }
@@ -24,6 +27,7 @@ public class ClienteService {
     }
 
     public Cliente save(Cliente cliente) {
+        cliente.setCantObrasDisponibles(cantObrasDisponibles);
         return clienteRepository.save(cliente);
     }
 

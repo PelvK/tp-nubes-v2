@@ -24,7 +24,7 @@ public class ClienteController {
 
     Logger log = LoggerFactory.getLogger(ClienteController.class);
 
-    @Value("${dan.clientes.instancia}")
+    @Value("${dan.clientes.instancia:ms-clientes-svc-default}")
     private String instancia;
 
 

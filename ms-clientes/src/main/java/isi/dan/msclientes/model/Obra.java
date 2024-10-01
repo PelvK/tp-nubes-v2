@@ -27,6 +27,7 @@ public class Obra {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     
+    @NotNull(message = "La direccion es obligatoria")
     private String direccion;
 
     @Column(name = "ES_REMODELACION")
@@ -36,12 +37,13 @@ public class Obra {
     
     private float lng;
     
+    @NotNull(message = "El cliente es obligatorio")
     @ManyToOne
     @JoinColumn(name = "ID_CLIENTE")
     private Cliente cliente;
     
     @NotNull(message = "El presupuesto es obligatorio")
-    @Min(value=100, message = "El presupuesto debe ser al menos de 100") //VER DESPUES
+    @Min(value=100, message = "El presupuesto debe ser al menos de 100")
     private BigDecimal presupuesto;
 
     @Enumerated(EnumType.STRING)

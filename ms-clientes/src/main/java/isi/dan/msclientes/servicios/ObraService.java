@@ -20,7 +20,7 @@ public class ObraService {
     private ObraRepository obraRepository;
 
     @Autowired
-    private ClienteRepository clienteRepository;
+	private ClienteService clienteService;
 
     public List<Obra> findAll() {
         return obraRepository.findAll();
@@ -30,8 +30,18 @@ public class ObraService {
         return obraRepository.findById(id);
     }
 
-    public Obra save(Obra obra) {
-        return obraRepository.save(obra);
+    public Obra save(Obra obra) throws ClienteNotFoundException {
+        try {
+			Cliente cliente = clienteService.findById(obra.getCliente().getId()).orElseThrow();
+			obra.setCliente(cliente);
+			cliente.tomarObra();
+			obra.setEstado(EstadoObra.HABILITADA);
+		} catch (NoSuchElementException e) {
+			throw new ClienteNotFoundException("Cliente " + obra.getCliente().getId() + " no encontrado");
+		} catch (ObraCambiarEstadoInvalidoException e) {
+			obra.setEstado(EstadoObra.PENDIENTE);
+		}
+		return obraRepository.save(obra);
     }
 
     public Obra update(Obra obra) {
@@ -42,115 +52,64 @@ public class ObraService {
         obraRepository.deleteById(id);
     }
 
-    public void asignarObraACliente(Integer clienteId, Integer obraId) throws Exception {
-        Optional<Cliente> clienteOpt = clienteRepository.findById(clienteId);
-        Optional<Obra> obraOpt = obraRepository.findById(obraId);
-
-        if (clienteOpt.isPresent() && obraOpt.isPresent()) {
-            Cliente cliente = clienteOpt.get();
-            Obra obra = obraOpt.get();
-
-            if (!obra.getEstado().equals(EstadoObra.HABILITADA)) {
-                throw new Exception("La obra no está habilitada para ser asignada.");
-            }
-
-            cliente.addObra(obra);
-            clienteRepository.save(cliente);
-        } else {
-            throw new Exception("Cliente o Obra no encontrada.");
-        }
+    public void asignarCliente(Integer clienteId, Integer obraId) throws ObraNotFoundException, ClienteNotFoundException {
+        Obra obra;
+		Cliente cliente;
+		try {
+			obra = this.findById(obraId).orElseThrow();
+		}catch(NoSuchElementException e) {
+			throw new ObraNotFoundException("Obra " + obraId + " no encontrada");
+		} try {
+			cliente = clienteService.findById(clienteId).orElseThrow();
+		}catch(NoSuchElementException e) {
+			throw new ClienteNotFoundException("Cliente " + clienteId + " no encontrado");
+		} 
+		obra.setCliente(cliente);
+		this.update(obra);
     }
 
-    public void finalizarObra(Integer clienteId, Integer obraId) throws Exception {
-        Optional<Cliente> clienteOpt = clienteRepository.findById(clienteId);
-        Optional<Obra> obraOpt = obraRepository.findById(obraId);
 
+    public Obra finalizarObra(Obra obra) throws ObraCambiarEstadoInvalidoException {
+		if (obra.getEstado().equals(EstadoObra.FINALIZADA))
+			throw new ObraCambiarEstadoInvalidoException("La obra ya se encuentra finalizada");
 
-        if (clienteOpt.isPresent() && obraOpt.isPresent()) {
-            Cliente cliente = clienteOpt.get();
-            Obra obra = obraOpt.get();
+		if (obra.getEstado().equals(EstadoObra.PENDIENTE))
+			throw new ObraCambiarEstadoInvalidoException("La obra debe estar habilitada para ser finalizada");
 
-            if(obra.getEstado().equals(EstadoObra.HABILITADA)){
-                obra.setEstado(EstadoObra.FINALIZADA);
-                obraRepository.save(obra);
-
-                
-                Optional<Obra> obraActualizarOpt = cliente.getObras().stream()
-                                            .filter(e -> EstadoObra.PENDIENTE.equals(e.getEstado()))
-                                            .min(Comparator.comparing(Obra::getFecha));
-                
-                if (obraActualizarOpt.isPresent()) { 
-
-                    Obra obraActualizar = obraActualizarOpt.get();
-                    obraActualizar.setEstado(EstadoObra.HABILITADA);
-                    obraRepository.save(obraActualizar);
-                    
-                }
-                
-            }
-            else{
-                throw new Exception("No se puede finalizar la obra");
-            }
-
-        } 
-        else {
-            throw new Exception("Cliente o Obra no encontrada.");
+		obra.getCliente().liberarObra();
+		obra.setEstado(EstadoObra.FINALIZADA);
+		List<Obra> obras = obtenerObrasPorEstado(obra.getCliente().getId(), EstadoObra.PENDIENTE);
+        if (obras.size > 0) {
+            habilitarObra(obras.min(Comparator.comparing(Obra::getFecha)))
         }
-    }
+		return this.update(obra);
+	}
+    
+    private List<Obra> obtenerObrasPorEstado(Integer idCliente, EstadoObra estado) {
+		if (estado == null)
+			return obraRepository.findByClienteId(idCliente);
+		return obraRepository.findByClienteIdAndEstadoEquals(idCliente, estado);
+	}
 
     
-    public void suspenderObra(Integer clienteId, Integer obraId) throws Exception {
-        Optional<Cliente> clienteOpt = clienteRepository.findById(clienteId);
-        Optional<Obra> obraOpt = obraRepository.findById(obraId);
-
-        if (clienteOpt.isPresent() && obraOpt.isPresent()) {
-            Cliente cliente = clienteOpt.get();
-            Obra obra = obraOpt.get();
-
-            if(obra.getEstado().equals(EstadoObra.HABILITADA)){
-                obra.setEstado(EstadoObra.PENDIENTE);
-                obraRepository.save(obra);
-            }
-            else{
-                throw new Exception("No se puede pasar a pendiente  la obra");
-            }
-
-        } 
-        else {
-            throw new Exception("Cliente o Obra no encontrada.");
-        }
+    public Obra suspenderObra(Obra obra) throws ObraNotStateChangedException {
+        if (obra.getEstado().equals(EstadoObra.FINALIZADA))
+			throw new ObraNotStateChangedException("No se puede deshabilitar una obra finalizada");
+		if (obra.getEstado().equals(EstadoObra.PENDIENTE))
+			throw new ObraNotStateChangedException("La obra ya se encuentra pendiente");
+		obra.getCliente().liberarObra();
+		obra.setEstado(EstadoObra.PENDIENTE);
+		return this.update(obra);
     }
 
-    public void habilitarObra(Integer clienteId, Integer obraId) throws Exception {
-        Optional<Cliente> clienteOpt = clienteRepository.findById(clienteId);
-        Optional<Obra> obraOpt = obraRepository.findById(obraId);
-
-        if (clienteOpt.isPresent() && obraOpt.isPresent()) {
-            Cliente cliente = clienteOpt.get();
-            Obra obra = obraOpt.get();
-
-            if(obra.getEstado().equals(EstadoObra.HABILITADA)){
-                
-                Long cantObrasHabilitadas = cliente.getObras().stream()
-                .filter(e -> EstadoObra.HABILITADA.equals(e.getEstado())).count();
-
-                if(cliente.getMaximoObrasEjecucionInteger() > cantObrasHabilitadas) {
-                    obra.setEstado(EstadoObra.HABILITADA);
-                    obraRepository.save(obra);
-                }
-                else{
-                    throw new Exception("No se puede pasar habilitar la obra debido a que se alcanzo el máximo de obras disponibles.");
-                }
-                
-            }
-            else{
-                throw new Exception("No se puede pasar habilitar la obra");
-            }
-
-        } 
-        else {
-            throw new Exception("Cliente o Obra no encontrada.");
-        }
+    public Obra habilitarObra(Obra obra) throws ObraNotStateChangedException {
+        if (obra.getEstado().equals(EstadoObra.FINALIZADA))
+			throw new ObraNotStateChangedException("No se puede habilitar una obra finalizada");
+		if (obra.getEstado().equals(EstadoObra.HABILITADA))
+			throw new ObraNotStateChangedException("La obra ya se encuentra habilitada");
+		obra.getCliente().tomarObra();
+		obra.setEstado(EstadoObra.HABILITADA);
+		return this.update(obra);
     }
 }
 
