@@ -5,8 +5,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import isi.dan.msclientes.aop.LogExecutionTime;
+import isi.dan.msclientes.exception.ClienteNotFoundException;
+import isi.dan.msclientes.exception.ObraNotFoundException;
+import isi.dan.msclientes.exception.ObraNotStateChangedException;
 import isi.dan.msclientes.model.Obra;
 import isi.dan.msclientes.servicios.ObraService;
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +24,7 @@ public class ObraController {
 
     @GetMapping
     @LogExecutionTime
-    public List<Obra> getAll() {
+    public List<Obra> getAll() throws ObraNotFoundException {
         return obraService.findAll();
     }
 
@@ -37,7 +41,8 @@ public class ObraController {
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<Obra> update(@PathVariable Integer id, @RequestBody @Valid Obra obra)
+	//REVISAR ESTO @V
+	public ResponseEntity<Obra> update(@PathVariable Integer id, @RequestBody Obra obra)
 			throws ObraNotFoundException {
 		if (!obraService.findById(id).isPresent()) {
 			throw new ObraNotFoundException("Obra " + id + " no encontrada");
@@ -64,31 +69,31 @@ public class ObraController {
 
 	@PutMapping("/{id}/habilitar")
 	public ResponseEntity<Obra> habilitar(@PathVariable Integer id)
-			throws ObraNotFoundException, ObraCambiarEstadoInvalidoException {
+			throws ObraNotFoundException, ObraNotStateChangedException {
 		Optional<Obra> obraOpt = obraService.findById(id);
 		if (!obraOpt.isPresent()) {
 			throw new ObraNotFoundException("Obra " + id + " no encontrada");
 		}
-		return ResponseEntity.ok(obraService.habilitar(obraOpt.get()));
+		return ResponseEntity.ok(obraService.habilitarObra(obraOpt.get()));
 	}
 
 	@PutMapping("/{id}/deshabilitar")
 	public ResponseEntity<Obra> deshabilitar(@PathVariable Integer id)
-			throws ObraNotFoundException, ObraCambiarEstadoInvalidoException {
+			throws ObraNotFoundException, ObraNotStateChangedException {
 		Optional<Obra> obraOpt = obraService.findById(id);
 		if (!obraOpt.isPresent()) {
 			throw new ObraNotFoundException("Obra " + id + " no encontrada");
 		}
-		return ResponseEntity.ok(obraService.deshabilitar(obraOpt.get()));
+		return ResponseEntity.ok(obraService.suspenderObra(obraOpt.get()));
 	}
 
 	@PutMapping("/{id}/finalizar")
 	public ResponseEntity<Obra> finalizar(@PathVariable Integer id)
-			throws ObraNotFoundException, ObraCambiarEstadoInvalidoException {
+			throws ObraNotFoundException, ObraNotStateChangedException {
 		Optional<Obra> obraOpt = obraService.findById(id);
 		if (!obraOpt.isPresent()) {
 			throw new ObraNotFoundException("Obra " + id + " no encontrada");
 		}
-		return ResponseEntity.ok(obraService.finalizar(obraOpt.get()));
+		return ResponseEntity.ok(obraService.finalizarObra(obraOpt.get()));
 	}
 }

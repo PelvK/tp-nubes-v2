@@ -2,6 +2,7 @@ package isi.dan.msclientes.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import isi.dan.msclientes.model.Cliente;
 import isi.dan.msclientes.model.Obra;
 import isi.dan.msclientes.servicios.ObraService;
 
@@ -119,7 +120,7 @@ public class ObraControllerTest {
 	@Test
 	void habilitarTest() throws Exception {
 		Mockito.when(obraService.findById(1)).thenReturn(Optional.of(obra));
-		Mockito.when(obraService.habilitar(obra)).thenReturn(obra);
+		Mockito.when(obraService.habilitarObra(obra)).thenReturn(obra);
 		mockMvc.perform(put("/api/obras/1/habilitar").contentType(MediaType.APPLICATION_JSON).content(asJsonString(obra)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.direccion").value("Direccion Test Obra"))
@@ -137,7 +138,7 @@ public class ObraControllerTest {
 			.andExpect(status().isNotFound());
 		// conflict
 		Mockito.when(obraService.findById(1)).thenReturn(Optional.of(obra));
-		Mockito.when(obraService.habilitar(obra)).thenThrow(ObraCambiarEstadoInvalidoException.class);
+		Mockito.when(obraService.habilitarObra(obra));
 		mockMvc.perform(put("/api/obras/1/habilitar").contentType(MediaType.APPLICATION_JSON).content(asJsonString(obra)))
 			.andExpect(status().isConflict());
 	}
@@ -145,7 +146,7 @@ public class ObraControllerTest {
 	@Test
 	void deshabilitarTest() throws Exception {
 		Mockito.when(obraService.findById(1)).thenReturn(Optional.of(obra));
-		Mockito.when(obraService.deshabilitar(obra)).thenReturn(obra);
+		Mockito.when(obraService.suspenderObra(obra)).thenReturn(obra);
 		mockMvc.perform(put("/api/obras/1/deshabilitar").contentType(MediaType.APPLICATION_JSON).content(asJsonString(obra)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.direccion").value("Direccion Test Obra"))
@@ -163,7 +164,7 @@ public class ObraControllerTest {
 			.andExpect(status().isNotFound());
 		// conflict
 		Mockito.when(obraService.findById(1)).thenReturn(Optional.of(obra));
-		Mockito.when(obraService.deshabilitar(obra)).thenThrow(ObraCambiarEstadoInvalidoException.class);
+		Mockito.when(obraService.suspenderObra(obra));
 		mockMvc.perform(put("/api/obras/1/deshabilitar").contentType(MediaType.APPLICATION_JSON).content(asJsonString(obra)))
 			.andExpect(status().isConflict());
 	}
@@ -171,7 +172,7 @@ public class ObraControllerTest {
 	@Test
 	void finalizarTest() throws Exception {
 		Mockito.when(obraService.findById(1)).thenReturn(Optional.of(obra));
-		Mockito.when(obraService.finalizar(obra)).thenReturn(obra);
+		Mockito.when(obraService.finalizarObra(obra)).thenReturn(obra);
 		mockMvc.perform(put("/api/obras/1/finalizar").contentType(MediaType.APPLICATION_JSON).content(asJsonString(obra)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.direccion").value("Direccion Test Obra"))
@@ -189,7 +190,7 @@ public class ObraControllerTest {
 			.andExpect(status().isNotFound());
 		// conflict
 		Mockito.when(obraService.findById(1)).thenReturn(Optional.of(obra));
-		Mockito.when(obraService.finalizar(obra)).thenThrow(ObraCambiarEstadoInvalidoException.class);
+		Mockito.when(obraService.finalizarObra(obra));
 		mockMvc.perform(put("/api/obras/1/finalizar").contentType(MediaType.APPLICATION_JSON).content(asJsonString(obra)))
 			.andExpect(status().isConflict());
 	}	

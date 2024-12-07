@@ -17,6 +17,7 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import isi.dan.msclientes.model.Cliente;
 import isi.dan.msclientes.model.Obra;
 
 import java.math.BigDecimal;
@@ -49,6 +50,8 @@ public class ObraRepositoryTest {
     @Autowired
     private ClienteRepository clienteRepository;
 
+    private Cliente cliente;
+    
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", mysqlContainer::getJdbcUrl);

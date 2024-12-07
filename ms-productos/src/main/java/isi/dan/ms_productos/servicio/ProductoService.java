@@ -1,3 +1,4 @@
+/* 
 package isi.dan.ms_productos.servicio;
 
 import org.slf4j.Logger;
@@ -48,7 +49,7 @@ public class ProductoService {
     }
 }
 
-
+*/
 
 
 

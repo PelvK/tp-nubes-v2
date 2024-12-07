@@ -12,7 +12,6 @@ import isi.dan.msclientes.aop.LogExecutionTime;
 import isi.dan.msclientes.exception.ClienteNotFoundException;
 import isi.dan.msclientes.model.Cliente;
 import isi.dan.msclientes.servicios.ClienteService;
-import jakarta.servlet.http.HttpServletRequest;
 
 import java.time.Instant;
 import java.util.List;
@@ -63,7 +62,7 @@ public class ClienteController {
         if (!clienteService.findById(id).isPresent()) {
             throw new ClienteNotFoundException("Cliente "+id+" no encontrado");
         }
-        cliente.setId(id);
+        cliente.setId(id); //VER SI SE PUEDE HACER ESTO
         return ResponseEntity.ok(clienteService.update(cliente));
     }
 

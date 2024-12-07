@@ -1,5 +1,7 @@
 package isi.dan.ms_productos.dto;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data

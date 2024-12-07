@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 
+import isi.dan.msclientes.exception.ObraNotStateChangedException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,6 +17,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Entity
@@ -37,12 +39,6 @@ public class Cliente {
     
     private String cuit;
 
-    @OneToMany(mappedBy="cliente") //VER SI CON ESTO SE ROMPE
-    private Set<Obra> obras;
-
-    @OneToMany(mappedBy="cliente")
-    private Set<Usuario> usuarios;
-
     @NotNull(message = "El maximo descubierto es obligatorio")
 	@Column(name = "MAXIMO_DESCUBIERTO")
 	@Min(value = 10000, message = "El descubierto maximo debe ser al menos 10000")
@@ -51,9 +47,9 @@ public class Cliente {
 	@Min(value = 0, message = "No se pueden tener cantidades negativas de obras disponibles a realizar")
 	Integer cantObrasDisponibles;
 	
-	public void tomarObra() throws ObraCambiarEstadoInvalidoException {
+	public void tomarObra() throws ObraNotStateChangedException {
 		if(cantObrasDisponibles==0)
-			throw new ObraCambiarEstadoInvalidoException("El cliente "+id+" ha superado su limite de obras habilitadas en simultaneo");
+			throw new ObraNotStateChangedException("El cliente " + id + " ha superado su limite de obras habilitadas en simultaneo");
 		cantObrasDisponibles--;
 	}
 

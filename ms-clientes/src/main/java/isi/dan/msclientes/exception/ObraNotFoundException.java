@@ -1,3 +1,4 @@
+
 package isi.dan.msclientes.exception;
 
 @SuppressWarnings("serial")

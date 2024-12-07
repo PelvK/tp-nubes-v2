@@ -3,14 +3,17 @@ package isi.dan.msclientes.servicios;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import isi.dan.msclientes.dao.ClienteRepository;
 import isi.dan.msclientes.dao.ObraRepository;
 import isi.dan.msclientes.enums.EstadoObra;
+import isi.dan.msclientes.exception.ClienteNotFoundException;
+import isi.dan.msclientes.exception.ObraNotFoundException;
+import isi.dan.msclientes.exception.ObraNotStateChangedException;
 import isi.dan.msclientes.model.Cliente;
 import isi.dan.msclientes.model.Obra;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -22,7 +25,7 @@ public class ObraService {
     @Autowired
 	private ClienteService clienteService;
 
-    public List<Obra> findAll() {
+    public List<Obra> findAll() throws ObraNotFoundException {
         return obraRepository.findAll();
     }
 
@@ -32,13 +35,13 @@ public class ObraService {
 
     public Obra save(Obra obra) throws ClienteNotFoundException {
         try {
-			Cliente cliente = clienteService.findById(obra.getCliente().getId()).orElseThrow();
+			Cliente cliente = clienteService.findById(obra.getCliente().getId()).orElseThrow(null);
 			obra.setCliente(cliente);
 			cliente.tomarObra();
 			obra.setEstado(EstadoObra.HABILITADA);
 		} catch (NoSuchElementException e) {
 			throw new ClienteNotFoundException("Cliente " + obra.getCliente().getId() + " no encontrado");
-		} catch (ObraCambiarEstadoInvalidoException e) {
+		} catch (ObraNotStateChangedException e) {
 			obra.setEstado(EstadoObra.PENDIENTE);
 		}
 		return obraRepository.save(obra);
@@ -56,11 +59,11 @@ public class ObraService {
         Obra obra;
 		Cliente cliente;
 		try {
-			obra = this.findById(obraId).orElseThrow();
+			obra = this.findById(obraId).orElseThrow(null);
 		}catch(NoSuchElementException e) {
 			throw new ObraNotFoundException("Obra " + obraId + " no encontrada");
 		} try {
-			cliente = clienteService.findById(clienteId).orElseThrow();
+			cliente = clienteService.findById(clienteId).orElseThrow(null);
 		}catch(NoSuchElementException e) {
 			throw new ClienteNotFoundException("Cliente " + clienteId + " no encontrado");
 		} 
@@ -69,18 +72,21 @@ public class ObraService {
     }
 
 
-    public Obra finalizarObra(Obra obra) throws ObraCambiarEstadoInvalidoException {
+    public Obra finalizarObra(Obra obra) throws ObraNotStateChangedException {
 		if (obra.getEstado().equals(EstadoObra.FINALIZADA))
-			throw new ObraCambiarEstadoInvalidoException("La obra ya se encuentra finalizada");
+			throw new ObraNotStateChangedException("La obra ya se encuentra finalizada");
 
 		if (obra.getEstado().equals(EstadoObra.PENDIENTE))
-			throw new ObraCambiarEstadoInvalidoException("La obra debe estar habilitada para ser finalizada");
+			throw new ObraNotStateChangedException("La obra debe estar habilitada para ser finalizada");
 
 		obra.getCliente().liberarObra();
 		obra.setEstado(EstadoObra.FINALIZADA);
 		List<Obra> obras = obtenerObrasPorEstado(obra.getCliente().getId(), EstadoObra.PENDIENTE);
-        if (obras.size > 0) {
-            habilitarObra(obras.min(Comparator.comparing(Obra::getFecha)))
+        if (obras.size() > 0) {
+			Obra obraConFechaMinima = obras.stream().min(Comparator.comparing(Obra::getFecha)).orElse(null);
+			if (obraConFechaMinima != null) {
+    			habilitarObra(obraConFechaMinima);
+			}
         }
 		return this.update(obra);
 	}
