@@ -16,7 +16,7 @@ import isi.dan.msclientes.servicios.ClienteService;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-
+@CrossOrigin
 @RestController
 @RequestMapping("/api/clientes")
 public class ClienteController {
@@ -32,8 +32,15 @@ public class ClienteController {
 
     @GetMapping
     @LogExecutionTime
-    public List<Cliente> getAll() {
-        return clienteService.findAll();
+    public List<Cliente> getAll(
+        @RequestParam(required = false) String cuit, 
+        @RequestParam(required = false) String nombre) {
+
+        if (cuit == null && nombre == null) {
+            return clienteService.findAll();
+        }
+
+        return clienteService.findByFilters(cuit, nombre);
     }
     
     @GetMapping("/echo")

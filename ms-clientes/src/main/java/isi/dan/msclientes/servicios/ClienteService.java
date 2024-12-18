@@ -23,6 +23,17 @@ public class ClienteService {
         return clienteRepository.findAll();
     }
 
+    public List<Cliente> findByFilters(String cuit, String nombre) {
+        List<Cliente> clientes = clienteRepository.findAll();
+        if (cuit != null) {
+            clientes = clientes.stream().filter(cliente -> cliente.getCuit().toUpperCase().contains(cuit.toUpperCase())).toList();
+        }
+        if (nombre != null) {
+            clientes = clientes.stream().filter(cliente -> cliente.getNombre().toUpperCase().contains(nombre.toUpperCase())).toList();
+        }
+        return clientes;
+    }
+
     public Optional<Cliente> findById(Integer id) {
         return clienteRepository.findById(id);
     }
